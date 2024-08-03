@@ -1,13 +1,13 @@
-# CMLFA
-# Cross-Modal Implicit Relation Reasoning and Aligning for Text-to-Image Person Retrieval
+# CMLFA: Cross-Modal Latent Feature Aligning for Text-to-Image Person Re-identification
 
-Official PyTorch implementation of the paper Cross-Modal Implicit Relation Reasoning and Aligning for Text-to-Image Person Retrieval. 
+Official PyTorch implementation of the paper Cross-Modal Latent Feature Aligning for Text-to-Image Person Re-identification. 
 
 
 
 ## Highlights
 
-The goal of this work is to enhance global text-to-image person retrieval performance, without requiring any additional supervision and inference cost. To achieve this, we utilize the full CLIP model as our feature extraction backbone. Additionally, we propose a novel cross-modal matching loss (SDM) and an Implicit Relation Reasoning module to mine fine-grained image-text relationships, enabling IRRA to learn more discriminative global image-text representations.
+  We propose a novel Cross-Modal Latent Feature Alignment (CMLFA) method, which uses learnable prototypes to capture shared features between image and text modalities and achieve aligned features. Specifically, CMLFA comprises four principal components: First, the CrossModal Encoder utilizes CLIP to project image and text features into a unified embedding space. Second, the Latent Feature Alignment (LFA) module employs learnable prototypes to extract and align features across image and text  modalities. Third, the Shared Feature Fusion (SFF) component integrates the aligned latent shared features with global  features to enhance generalization. Finally, the Joint Loss Function incorporates ID loss, ITC loss, and mask-based  unsupervised training to optimize feature alignment. Experimental results on CUHK-PEDES benchmarks demonstrate  CMLFA’s effectiveness, surpassing state-of-the-art methods with improvements in Rank-1 accuracy by 1.54%.
+
 
 ![](images/model.png)
 
@@ -50,15 +50,18 @@ Organize them in `your dataset root dir` folder as follows:
 ## Training
 
 ```python
+CUDA_VISIBLE_DEVICES=0 \
 python train.py \
---name iira \
+--name cmlfa \
 --img_aug \
 --batch_size 64 \
 --MLM \
---loss_names 'sdm+mlm+id' \
+--loss_names 'sdm+mlm+id+itc' \
 --dataset_name 'CUHK-PEDES' \
 --root_dir 'your dataset root dir' \
---num_epoch 60
+--num_epoch 150 \
+--id_loss_weight 0.5 \
+--mlm_loss_weight 0.5
 ```
 
 ## Testing
@@ -67,35 +70,14 @@ python train.py \
 python test.py --config_file 'path/to/model_dir/configs.yaml'
 ```
 
-## IRRA on Text-to-Image Person Retrieval Results
+## CMLFA on Text-to-Image Person Retrieval Results
 #### CUHK-PEDES dataset
 
-|     Method      |     Backbone     |  Rank-1   |  Rank-5   |  Rank-10  |    mAP    |   mINP    |
-| :-------------: | :--------------: | :-------: | :-------: | :-------: | :-------: | :-------: |
-|     CMPM/C      |    RN50/LSTM     |   49.37   |     -     |   79.27   |     -     |     -     |
-|      DSSL       |    RN50/BERT     |   59.98   |   80.41   |   87.56   |     -     |     -     |
-|      SSAN       |    RN50/LSTM     |   61.37   |   80.15   |   86.73   |     -     |     -     |
-|   Han et al.    |  RN101/Xformer   |   64.08   |   81.73   |   88.19   |   60.08   |     -     |
-|      LGUR       | DeiT-Small/BERT  |   65.25   |   83.12   |   89.00   |     -     |     -     |
-|       IVT       |  ViT-B-16/BERT   |   65.59   |   83.11   |   89.21   |     -     |     -     |
-|      CFine      |  ViT-B-16/BERT   |   69.57   |   85.93   |   91.15   |     -     |     -     |
-|    **CLIP**     | ViT-B-16/Xformer |   68.19   |   86.47   |   91.47   |   61.12   |   44.86   |
-| **IRRA (ours)** | ViT-B-16/Xformer | **73.38** | **89.93** | **93.71** | **66.13** | **50.24** |
-
-
+![](images/exp1.png)
 
 
 #### RSTPReid dataset
-
-|     Method      |  Rank-1   |  Rank-5   |  Rank-10  |    mAP    |   mINP    |
-| :-------------: | :-------: | :-------: | :-------: | :-------: | :-------: |
-|      DSSL       |   39.05   |   62.60   |   73.95   |     -     |     -     |
-|      SSAN       |   43.50   |   67.80   |   77.15   |     -     |     -     |
-|       IVT       |   46.70   |   70.00   |   78.80   |     -     |     -     |
-|      CFine      |   50.55   |   72.50   |   81.60   |     -     |     -     |
-|    **CLIP**     |   54.05   |   80.70   |   88.00   |   43.41   |   22.31   |
-| **IRRA (ours)** | **60.20** | **81.30** | **88.20** | **47.17** | **25.28** |
-
+![](images/exp2.png)
 
 
 ## Acknowledgments
